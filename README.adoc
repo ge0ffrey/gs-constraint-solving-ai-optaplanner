@@ -1,0 +1,21 @@
+:toc:
+:icons: font
+:source-highlighter: prettify
+:project_id: gs-constraint-solving-ai-optaplanner
+
+This guide walks you through the process of using https://github.com/spring-projects/spring-boot[Spring Boot] and
+https://www.optaplanner.org/[OptaPlanner] to build an
+application that optimizes a school timetable with constraint solving Artificial Intelligence.
+
+== What You Will build
+
+You will assign `Lesson` POJOs (Plain Old Java Objects) to `Timeslot` and `Room` POJOs
+to generate an optimal high school timetable which adheres to hard and soft scheduling constraints
+by using Spring Boot OptaPlanner.
+
+== What You Need
+
+:java_version: 1.8
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/prereq_editor_jdk_buildtools.adoc[]
+
+include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/how_to_complete_this_guide.adoc[]
