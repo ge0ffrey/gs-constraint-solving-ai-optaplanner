@@ -3,7 +3,7 @@ var autoRefreshIntervalId = null;
 
 function refreshTimeTable() {
     $.getJSON("/timeTable", function (timeTable) {
-        refreshSolvingButtons(timeTable.solverStatus !== "NOT_SOLVING");
+        refreshSolvingButtons(timeTable.solverStatus != null && timeTable.solverStatus !== "NOT_SOLVING");
         $("#score").text("Score: "+ (timeTable.score == null ? "?" : timeTable.score));
 
         var timeTableByRoom = $("#timeTableByRoom");
