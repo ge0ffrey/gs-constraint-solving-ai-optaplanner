@@ -22,7 +22,7 @@ public class TimeTableService {
     @Autowired
     private ScoreManager<TimeTable> scoreManager;
 
-    // To try, open http://localhost:8080/timeTable
+    // To try, GET http://localhost:8080/timeTable
     @GetMapping()
     public TimeTable getTimeTable() {
         TimeTable solution = timeTableRepository.findById(TimeTableRepository.SINGLETON_TIME_TABLE_ID);

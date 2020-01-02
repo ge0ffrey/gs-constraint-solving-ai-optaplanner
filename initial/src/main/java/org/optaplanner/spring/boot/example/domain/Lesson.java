@@ -1,47 +1,32 @@
 package org.optaplanner.spring.boot.example.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
-@Entity
 public class Lesson {
 
     @PlanningId
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    @NotNull
     private Long id;
 
-    @NotBlank
     private String subject;
-    @NotBlank
     private String teacher;
-    @NotBlank
     private String studentGroup;
 
     @PlanningVariable(valueRangeProviderRefs = "timeslotRange")
-    @ManyToOne
     private Timeslot timeslot;
     @PlanningVariable(valueRangeProviderRefs = "roomRange")
-    @ManyToOne
     private Room room;
 
     private Lesson() {
     }
 
-    public Lesson(String subject, String teacher, String studentGroup) {
-        this.subject = subject.trim();
-        this.teacher = teacher.trim();
-        this.studentGroup = studentGroup.trim();
+    public Lesson(Long id, String subject, String teacher, String studentGroup) {
+        this.id = id;
+        this.subject = subject;
+        this.teacher = teacher;
+        this.studentGroup = studentGroup;
     }
 
     @Override
@@ -52,10 +37,6 @@ public class Lesson {
     // ************************************************************************
     // Getters and setters
     // ************************************************************************
-
-    public Long getId() {
-        return id;
-    }
 
     public String getSubject() {
         return subject;

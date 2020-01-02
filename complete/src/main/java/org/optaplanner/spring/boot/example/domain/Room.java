@@ -27,16 +27,20 @@ public class Room {
         this.name = name.trim();
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    // ************************************************************************
+    // Getters and setters
+    // ************************************************************************
+
     public Long getId() {
         return id;
     }
 
     public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
         return name;
     }
 
