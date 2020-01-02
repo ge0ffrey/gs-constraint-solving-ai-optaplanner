@@ -29,28 +29,40 @@ include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/
 
 
 [[initial]]
-== Create a resource controller
+== Create the build file
 
-Create a new controller for your Spring application:
+// TODO
 
-`src/main/java/hello/GreetingController.java`
-[source,java,tabsize=2]
-----
-include::complete/src/main/java/hello/GreetingController.java[]
-----
 
-NOTE: The above example does not specify `GET` vs. `PUT`, `POST`, and so forth, because `@RequestMapping` maps all HTTP operations by default. Use `@RequestMapping(method=GET)` to narrow this mapping.
+== Create the domain objects
+
+// TODO
+
+
+== Create the planning solution
+
+// TODO
+
+
+== Define the hard and soft constraints
+
+// TODO
+
+
+== Create the solver service
+
+// TODO
+
 
 
 == Make the application executable
 
-Although it is possible to package this service as a traditional link:/understanding/WAR[WAR] file for deployment to an external application server, the simpler approach demonstrated below creates a standalone application. You package everything in a single, executable JAR file, driven by a good old Java `main()` method. Along the way, you use Spring's support for embedding the link:/understanding/Tomcat[Tomcat] servlet container as the HTTP runtime, instead of deploying to an external instance.
+Package everything in a single, executable JAR file, driven by a good old Java `main()` method:
 
-
-`src/main/java/hello/Application.java`
+`src/main/java/com/example/TimeTableSpringBootApp.java`
 [source,java,tabsize=2]
 ----
-include::complete/src/main/java/hello/Application.java[]
+include::initial/src/main/java/com/example/TimeTableSpringBootApp.java[]
 ----
 
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/spring-boot-application.adoc[]
@@ -60,19 +72,30 @@ include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_with_both.adoc[]
 
 
-Logging output is displayed. The service should be up and running within a few seconds.
+// TODO
+
 
 
 == Test the application
 
+// TODO
 Now that the application is running, you can test it.
+
 
 
 == Summary
 
-Congratulations! You've just developed a Spring application!
+// TODO
+Congratulations! You've just developed a https://spring.io/[Spring] application with https://www.optaplanner.org/[OptaPlanner]!
 
 
 
+
+== See Also
+
+The following guides may also be helpful:
+
+* https://spring.io/guides/gs/spring-boot/[Building an Application with Spring Boot]
+* https://spring.io/guides/gs/accessing-data-rest/[Accessing JPA Data with REST]
 
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/footer.adoc[]
