@@ -8,14 +8,18 @@ function refreshTimeTable() {
 
         var timeTableByRoom = $("#timeTableByRoom");
         timeTableByRoom.children().remove();
-        var unassignedLessonsByRoom = $("#unassignedLessonsByRoom");
-        unassignedLessonsByRoom.children().remove();
+        var timeTableByTeacher = $("#timeTableByTeacher");
+        timeTableByTeacher.children().remove();
+        var timeTableByStudentGroup = $("#timeTableByStudentGroup");
+        timeTableByStudentGroup.children().remove();
+        var unassignedLessons = $("#unassignedLessons");
+        unassignedLessons.children().remove();
 
-        var thead = $("<thead>").appendTo(timeTableByRoom);
-        var headerRow = $("<tr>").appendTo(thead);
-        headerRow.append($("<th>Timeslot</th>"));
+        var theadByRoom = $("<thead>").appendTo(timeTableByRoom);
+        var headerRowByRoom = $("<tr>").appendTo(theadByRoom);
+        headerRowByRoom.append($("<th>Timeslot</th>"));
         $.each(timeTable.roomList, function (index, room) {
-            headerRow.append($("<th>"
+            headerRowByRoom.append($("<th>"
                     + "<span>" + room.name + "</span>"
                     + "<button id=\"deleteRoomButton-" + room.id + "\" type=\"button\" class=\"ml-2 mb-1 btn btn-light btn-sm p-1\">"
                     + "<small class=\"fas fa-trash\"></small>"
@@ -25,10 +29,31 @@ function refreshTimeTable() {
                 deleteRoom(room);
             });
         });
+        var theadByTeacher = $("<thead>").appendTo(timeTableByTeacher);
+        var headerRowByTeacher = $("<tr>").appendTo(theadByTeacher);
+        headerRowByTeacher.append($("<th>Timeslot</th>"));
+        const teacherList = [...new Set(timeTable.lessonList.map(lesson => lesson.teacher))];
+        $.each(teacherList, function (index, teacher) {
+            headerRowByTeacher.append($("<th>"
+                    + "<span>" + teacher + "</span>"
+                    + "</th>"));
+        });
+        var theadByStudentGroup = $("<thead>").appendTo(timeTableByStudentGroup);
+        var headerRowByStudentGroup = $("<tr>").appendTo(theadByStudentGroup);
+        headerRowByStudentGroup.append($("<th>Timeslot</th>"));
+        const studentGroupList = [...new Set(timeTable.lessonList.map(lesson => lesson.studentGroup))];
+        $.each(studentGroupList, function (index, studentGroup) {
+            headerRowByStudentGroup.append($("<th>"
+                    + "<span>" + studentGroup + "</span>"
+                    + "</th>"));
+        });
 
+        var tbodyByRoom = $("<tbody>").appendTo(timeTableByRoom);
+        var tbodyByTeacher = $("<tbody>").appendTo(timeTableByTeacher);
+        var tbodyByStudentGroup = $("<tbody>").appendTo(timeTableByStudentGroup);
         $.each(timeTable.timeslotList, function (index, timeslot) {
-            var row = $("<tr>").appendTo(timeTableByRoom);
-            row.append($("<th class=\"align-middle\">"
+            var rowByRoom = $("<tr>").appendTo(tbodyByRoom);
+            rowByRoom.append($("<th class=\"align-middle\">"
                     + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
                     + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
                     + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
@@ -40,7 +65,25 @@ function refreshTimeTable() {
                 deleteTimeslot(timeslot);
             });
             $.each(timeTable.roomList, function (index, room) {
-                row.append($("<td id=\"timeslot" + timeslot.id + "room" + room.id + "\"></td>"));
+                rowByRoom.append($("<td id=\"timeslot" + timeslot.id + "room" + room.id + "\"></td>"));
+            });
+            var rowByTeacher = $("<tr>").appendTo(tbodyByTeacher);
+            rowByTeacher.append($("<th class=\"align-middle\">"
+                    + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
+                    + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
+                    + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
+                    + "</th>"));
+            $.each(teacherList, function (index, teacher) {
+                rowByTeacher.append($("<td id=\"timeslot" + timeslot.id + "teacher" + convertToId(teacher) + "\"></td>"));
+            });
+            var rowByStudentGroup = $("<tr>").appendTo(tbodyByStudentGroup);
+            rowByStudentGroup.append($("<th class=\"align-middle\">"
+                    + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
+                    + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
+                    + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
+                    + "</th>"));
+            $.each(studentGroupList, function (index, studentGroup) {
+                rowByStudentGroup.append($("<td id=\"timeslot" + timeslot.id + "studentGroup" + convertToId(studentGroup) + "\"></td>"));
             });
         });
 
@@ -55,9 +98,17 @@ function refreshTimeTable() {
                     + "<p class=\"card-text ml-2\">" + lesson.studentGroup + "</p>"
                     + "</div></div>");
             if (lesson.timeslot == null || lesson.room == null) {
-                unassignedLessonsByRoom.append(lessonElement);
+                unassignedLessons.append(lessonElement);
             } else {
                 $("#timeslot" + lesson.timeslot.id + "room" + lesson.room.id).append(lessonElement);
+                var lessonElementWithoutDelete = $("<div class=\"card lesson\"><div class=\"card-body p-2\">"
+                        + "<h5 class=\"card-title mb-1\">" + lesson.subject + "</h5>"
+                        + "<p class=\"card-text text-muted ml-2 mb-1\">by " + lesson.teacher + "</p>"
+                        + "<small class=\"ml-2 mt-1 card-text text-muted align-bottom float-right\">" + lesson.id + "</small>"
+                        + "<p class=\"card-text ml-2\">" + lesson.studentGroup + "</p>"
+                        + "</div></div>");
+                $("#timeslot" + lesson.timeslot.id + "teacher" + convertToId(lesson.teacher)).append(lessonElementWithoutDelete.clone());
+                $("#timeslot" + lesson.timeslot.id + "studentGroup" + convertToId(lesson.studentGroup)).append(lessonElementWithoutDelete.clone());
             }
             $("#deleteLessonButton-" + lesson.id).click(function() {
                 deleteLesson(lesson);
@@ -65,6 +116,11 @@ function refreshTimeTable() {
         });
 
     });
+}
+
+function convertToId(str) {
+    // Base64 encoding without padding to avoid XSS
+    return btoa(str).replace(/=/g, "");
 }
 
 function solve() {
