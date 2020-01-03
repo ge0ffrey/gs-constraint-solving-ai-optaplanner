@@ -88,7 +88,8 @@ function refreshTimeTable() {
         });
 
         $.each(timeTable.lessonList, function (index, lesson) {
-            var lessonElement = $("<div class=\"card lesson\"><div class=\"card-body p-2\">"
+            let color = pickColor(lesson.subject);
+            var lessonElement = $("<div class=\"card lesson\" style=\"background-color: " + color +"\"><div class=\"card-body p-2\">"
                     + "<button id=\"deleteLessonButton-" + lesson.id + "\" type=\"button\" class=\"ml-2 btn btn-light btn-sm p-1 float-right\">"
                     + "<small class=\"fas fa-trash\"></small>"
                     + "</button>"
@@ -101,7 +102,7 @@ function refreshTimeTable() {
                 unassignedLessons.append(lessonElement);
             } else {
                 $("#timeslot" + lesson.timeslot.id + "room" + lesson.room.id).append(lessonElement);
-                var lessonElementWithoutDelete = $("<div class=\"card lesson\"><div class=\"card-body p-2\">"
+                var lessonElementWithoutDelete = $("<div class=\"card lesson\" style=\"background-color: " + color +"\"><div class=\"card-body p-2\">"
                         + "<h5 class=\"card-title mb-1\">" + lesson.subject + "</h5>"
                         + "<p class=\"card-text text-muted ml-2 mb-1\">by " + lesson.teacher + "</p>"
                         + "<small class=\"ml-2 mt-1 card-text text-muted align-bottom float-right\">" + lesson.id + "</small>"
@@ -290,3 +291,65 @@ $(document).ready( function() {
 
     refreshTimeTable();
 });
+
+// ****************************************************************************
+// TangoColorFactory
+// ****************************************************************************
+
+const SEQUENCE_1 = [0x8AE234, 0xFCE94F, 0x729FCF, 0xE9B96E, 0xAD7FA8];
+const SEQUENCE_2 = [0x73D216, 0xEDD400, 0x3465A4, 0xC17D11, 0x75507B];
+const SEQUENCE_3 = [0x4E9A06, 0xC4A000, 0x204A87, 0x8F5902, 0x5C3566];
+
+var colorMap = new Map;
+var nextColorCount = 0;
+
+function pickColor(object) {
+    let color = colorMap[object];
+    if (color !== undefined) {
+        return color;
+    }
+    color = nextColor();
+    colorMap[object] = color;
+    return color;
+}
+
+function nextColor() {
+    let color;
+    let colorIndex = nextColorCount % SEQUENCE_1.length;
+    let shadeIndex = Math.floor(nextColorCount / SEQUENCE_1.length);
+    if (shadeIndex === 0) {
+        color = SEQUENCE_1[colorIndex];
+    } else if (shadeIndex === 1) {
+        color = SEQUENCE_2[colorIndex];
+    } else if (shadeIndex === 2) {
+        color = SEQUENCE_3[colorIndex];
+    } else {
+        shadeIndex -= 3;
+        let floorColor;
+        let ceilColor;
+        if (shadeIndex % 2 === 0) {
+            floorColor = SEQUENCE_2[colorIndex];
+            ceilColor = SEQUENCE_1[colorIndex];
+        } else {
+            floorColor = SEQUENCE_3[colorIndex];
+            ceilColor = SEQUENCE_2[colorIndex];
+        }
+        let base = Math.floor((shadeIndex / 2) + 1);
+        let divisor = 2;
+        while (base >= divisor) {
+            divisor *= 2;
+        }
+        base = (base * 2) - divisor + 1;
+        let shadePercentage = base / divisor;
+        color = buildPercentageColor(floorColor, ceilColor, shadePercentage);
+    }
+    nextColorCount++;
+    return "#" + color.toString(16);
+}
+
+function buildPercentageColor(floorColor, ceilColor, shadePercentage) {
+    return new Color(
+            floorColor.getRed() + (int) (shadePercentage * (ceilColor.getRed() - floorColor.getRed())),
+            floorColor.getGreen() + (int) (shadePercentage * (ceilColor.getGreen() - floorColor.getGreen())),
+            floorColor.getBlue() + (int) (shadePercentage * (ceilColor.getBlue() - floorColor.getBlue())));
+}
