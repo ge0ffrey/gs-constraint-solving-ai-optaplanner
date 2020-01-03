@@ -33,9 +33,9 @@ public class TimeTable {
         this.lessonList = lessonList;
     }
 
-    // ************************************************************************
+    // ********************************
     // Getters and setters
-    // ************************************************************************
+    // ********************************
 
     public List<Timeslot> getTimeslotList() {
         return timeslotList;

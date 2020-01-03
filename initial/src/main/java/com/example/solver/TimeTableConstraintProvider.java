@@ -21,20 +21,20 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
     }
 
     private Constraint roomConflict(ConstraintFactory constraintFactory) {
-        // Each room can accommodate at most one lesson at the same time
+        // Each room can accommodate at most one lesson at the same time.
         return constraintFactory
-                // Select a pair of 2 different lessons
+                // Select each pair of 2 different lessons ...
                 .fromUniquePair(Lesson.class,
-                        // in the same timeslot
+                        // ... in the same timeslot ...
                         Joiners.equal(Lesson::getTimeslot),
-                        // in the same room
+                        // ... in the same room ...
                         Joiners.equal(Lesson::getRoom))
-                // to penalize
+                // ... and penalize each pair with a hard weight.
                 .penalize("Room conflict", HardSoftScore.ONE_HARD);
     }
 
     private Constraint teacherConflict(ConstraintFactory constraintFactory) {
-        // Each teacher can teach at most one lesson at the same time
+        // Each teacher can teach at most one lesson at the same time.
         return constraintFactory
                 .fromUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),
@@ -43,7 +43,7 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
     }
 
     private Constraint studentGroupConflict(ConstraintFactory constraintFactory) {
-        // Each student can attend at most one lesson at the same time
+        // Each student can attend at most one lesson at the same time.
         return constraintFactory
                 .fromUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),

@@ -4,14 +4,13 @@
 :project_id: gs-constraint-solving-ai-optaplanner
 
 This guide walks you through the process of creating a https://github.com/spring-projects/spring-boot[Spring Boot]
-and https://www.optaplanner.org/[OptaPlanner] application
-that optimizes a school timetable for students and teachers.
+application with https://www.optaplanner.org/[OptaPlanner]'s constraint solving Artificial Intelligence.
+This application optimizes a school timetable for students and teachers.
 
 == What you'll build
 
-You'll assign `Lesson` POJOs (Plain Old Java Objects) to `Timeslot` and `Room` POJOs
-to generate an optimal high school timetable which adheres to hard and soft scheduling constraints
-by using OptaPlanner's constraint solving Artificial Intelligence on Spring Boot.
+Your application will assign `Lesson` instances to `Timeslot` and `Room` instances.
+It'll generate an optimal high school timetable that adheres to hard and soft scheduling constraints.
 
 == What you'll need
 
@@ -38,20 +37,56 @@ include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/
 
 // TODO
 
+`src/main/java/com/example/domain/Timeslot.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/domain/Timeslot.java[]
+----
+
+`src/main/java/com/example/domain/Room.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/domain/Room.java[]
+----
+
+`src/main/java/com/example/domain/Lesson.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/domain/Lesson.java[]
+----
+
 
 == Create the planning solution
 
 // TODO
+
+`src/main/java/com/example/domain/TimeTable.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/domain/TimeTable.java[]
+----
 
 
 == Define the hard and soft constraints
 
 // TODO
 
+`src/main/java/com/example/solver/TimeTableConstraintProvider.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/solver/TimeTableConstraintProvider.java[]
+----
+
 
 == Create the solver service
 
 // TODO
+
+`src/main/java/com/example/solver/TimeTableService.java`
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/solver/TimeTableService.java[]
+----
 
 
 

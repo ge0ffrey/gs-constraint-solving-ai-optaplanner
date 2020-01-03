@@ -23,9 +23,9 @@ public class Timeslot {
         return dayOfWeek + " " + startTime.toString();
     }
 
-    // ************************************************************************
+    // ********************************
     // Getters and setters
-    // ************************************************************************
+    // ********************************
 
     public DayOfWeek getDayOfWeek() {
         return dayOfWeek;

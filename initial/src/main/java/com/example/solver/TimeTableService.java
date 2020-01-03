@@ -18,12 +18,14 @@ public class TimeTableService {
     @Autowired
     private SolverManager<TimeTable, UUID> solverManager;
 
-    // To try, POST http://localhost:8080/timeTable
     @PostMapping("/solve")
     public TimeTable solve(TimeTable problem) {
-        SolverJob<TimeTable, UUID> solverJob = solverManager.solve(UUID.randomUUID(), problem);
+        UUID problemId = UUID.randomUUID();
+        // Submit the problem to start solving
+        SolverJob<TimeTable, UUID> solverJob = solverManager.solve(problemId, problem);
         TimeTable solution;
         try {
+            // Wait until the solving ends
             solution = solverJob.getFinalBestSolution();
         } catch (InterruptedException | ExecutionException e) {
             throw new IllegalStateException("Solving failed.", e);
