@@ -18,14 +18,17 @@ function refreshTimeTable() {
         var theadByRoom = $("<thead>").appendTo(timeTableByRoom);
         var headerRowByRoom = $("<tr>").appendTo(theadByRoom);
         headerRowByRoom.append($("<th>Timeslot</th>"));
-        $.each(timeTable.roomList, function (index, room) {
-            headerRowByRoom.append($("<th>"
-                    + "<span>" + room.name + "</span>"
-                    + "<button id=\"deleteRoomButton-" + room.id + "\" type=\"button\" class=\"ml-2 mb-1 btn btn-light btn-sm p-1\">"
-                    + "<small class=\"fas fa-trash\"></small>"
-                    + "</button>"
-                    + "</th>"));
-            $("#deleteRoomButton-" + room.id).click(function() {
+        $.each(timeTable.roomList, (index, room) => {
+            const id = uuid();
+            headerRowByRoom.append($(template({ room }, props => `
+                <th>
+                    <span>${props.room.name}</span>
+                    <button id="${id}" type="button" class="ml-2 mb-1 btn btn-light btn-sm p-1">
+                        <small class="fas fa-trash"></small>
+                    </button>
+                </th>`
+            )));
+            $(`#${id}`).click(function() {
                 deleteRoom(room);
             });
         });
@@ -33,85 +36,116 @@ function refreshTimeTable() {
         var headerRowByTeacher = $("<tr>").appendTo(theadByTeacher);
         headerRowByTeacher.append($("<th>Timeslot</th>"));
         const teacherList = [...new Set(timeTable.lessonList.map(lesson => lesson.teacher))];
-        $.each(teacherList, function (index, teacher) {
-            headerRowByTeacher.append($("<th>"
-                    + "<span>" + teacher + "</span>"
-                    + "</th>"));
+        $.each(teacherList, (index, teacher) => {
+            headerRowByTeacher.append($(template({ teacher }, props => `
+                <th>
+                    <span>${props.teacher}</span>
+                </th>`
+            )));
         });
         var theadByStudentGroup = $("<thead>").appendTo(timeTableByStudentGroup);
         var headerRowByStudentGroup = $("<tr>").appendTo(theadByStudentGroup);
         headerRowByStudentGroup.append($("<th>Timeslot</th>"));
         const studentGroupList = [...new Set(timeTable.lessonList.map(lesson => lesson.studentGroup))];
-        $.each(studentGroupList, function (index, studentGroup) {
-            headerRowByStudentGroup.append($("<th>"
-                    + "<span>" + studentGroup + "</span>"
-                    + "</th>"));
+        $.each(studentGroupList, (index, studentGroup) => {
+            headerRowByStudentGroup.append($(template({ studentGroup }, props => `
+                <th>
+                    <span>${props.studentGroup}</span>
+                </th>
+            `)));
         });
 
         var tbodyByRoom = $("<tbody>").appendTo(timeTableByRoom);
         var tbodyByTeacher = $("<tbody>").appendTo(timeTableByTeacher);
         var tbodyByStudentGroup = $("<tbody>").appendTo(timeTableByStudentGroup);
-        $.each(timeTable.timeslotList, function (index, timeslot) {
+        $.each(timeTable.timeslotList, (index, timeslot) => {
             var rowByRoom = $("<tr>").appendTo(tbodyByRoom);
-            rowByRoom.append($("<th class=\"align-middle\">"
-                    + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
-                    + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
-                    + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
-                    + "<button id=\"deleteTimeslotButton-" + timeslot.id + "\" type=\"button\" class=\"ml-2 mb-1 btn btn-light btn-sm p-1\">"
-                    + "<small class=\"fas fa-trash\"></small>"
-                    + "</button>"
-                    + "</th>"));
-            $("#deleteTimeslotButton-" + timeslot.id).click(function() {
+            const id = uuid();
+            rowByRoom.append($(template({ timeslot }, props => `
+                <th class="align-middle">
+                    <span>
+                        ${props.timeslot.dayOfWeek.charAt(0) + props.timeslot.dayOfWeek.slice(1).toLowerCase()}
+                        ${moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")}
+                        -
+                        ${moment(timeslot.endTime, "HH:mm:ss").format("HH:mm")}
+                    </span>
+                    <button id="${id}" type="button" class="ml-2 mb-1 btn btn-light btn-sm p-1">
+                        <small class="fas fa-trash"></small>
+                    </button>
+                </th>
+            `)));
+            $(`#${id}`).click(() => {
                 deleteTimeslot(timeslot);
             });
-            $.each(timeTable.roomList, function (index, room) {
-                rowByRoom.append($("<td id=\"timeslot" + timeslot.id + "room" + room.id + "\"></td>"));
+            $.each(timeTable.roomList, (index, room) => {
+                rowByRoom.append($(template({ timeslot, room }, props => `
+                    <td id="timeslot${props.timeslot.id}room${props.room.id}"></td>`
+                )));
             });
             var rowByTeacher = $("<tr>").appendTo(tbodyByTeacher);
-            rowByTeacher.append($("<th class=\"align-middle\">"
-                    + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
-                    + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
-                    + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
-                    + "</th>"));
-            $.each(teacherList, function (index, teacher) {
-                rowByTeacher.append($("<td id=\"timeslot" + timeslot.id + "teacher" + convertToId(teacher) + "\"></td>"));
+            rowByTeacher.append($(template({ timeslot }, props => `
+                <th class="align-middle">
+                    <span>
+                        ${props.timeslot.dayOfWeek.charAt(0) + props.timeslot.dayOfWeek.slice(1).toLowerCase()}
+                        ${moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")}
+                        -
+                        ${moment(timeslot.endTime, "HH:mm:ss").format("HH:mm")}
+                    </span>
+                </th>
+            `)));
+            $.each(teacherList, (index, teacher) => {
+                rowByTeacher.append($(`<td id="timeslot${timeslot.id}teacher${convertToId(teacher)}"></td>`));
             });
             var rowByStudentGroup = $("<tr>").appendTo(tbodyByStudentGroup);
-            rowByStudentGroup.append($("<th class=\"align-middle\">"
-                    + "<span>" + timeslot.dayOfWeek.charAt(0) + timeslot.dayOfWeek.slice(1).toLowerCase()
-                    + " " + moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")
-                    + " - " + moment(timeslot.endTime, "HH:mm:ss").format("HH:mm") + "</span>"
-                    + "</th>"));
-            $.each(studentGroupList, function (index, studentGroup) {
-                rowByStudentGroup.append($("<td id=\"timeslot" + timeslot.id + "studentGroup" + convertToId(studentGroup) + "\"></td>"));
+            rowByStudentGroup.append($(template({ timeslot }, props => `
+                <th class="align-middle">
+                    <span>
+                    ${props.timeslot.dayOfWeek.charAt(0) + props.timeslot.dayOfWeek.slice(1).toLowerCase()}
+                    ${moment(timeslot.startTime, "HH:mm:ss").format("HH:mm")}
+                    -
+                    ${moment(timeslot.endTime, "HH:mm:ss").format("HH:mm")}
+                    </span>
+                </th>
+            `)));
+            $.each(studentGroupList, (index, studentGroup) => {
+                rowByStudentGroup.append($(`<td id="timeslot${timeslot.id}studentGroup${convertToId(studentGroup)}" /></td>`));
             });
         });
 
-        $.each(timeTable.lessonList, function (index, lesson) {
+        $.each(timeTable.lessonList, (index, lesson) => {
             let color = pickColor(lesson.subject);
-            var lessonElement = $("<div class=\"card lesson\" style=\"background-color: " + color +"\"><div class=\"card-body p-2\">"
-                    + "<button id=\"deleteLessonButton-" + lesson.id + "\" type=\"button\" class=\"ml-2 btn btn-light btn-sm p-1 float-right\">"
-                    + "<small class=\"fas fa-trash\"></small>"
-                    + "</button>"
-                    + "<h5 class=\"card-title mb-1\">" + lesson.subject + "</h5>"
-                    + "<p class=\"card-text text-muted ml-2 mb-1\">by " + lesson.teacher + "</p>"
-                    + "<small class=\"ml-2 mt-1 card-text text-muted align-bottom float-right\">" + lesson.id + "</small>"
-                    + "<p class=\"card-text ml-2\">" + lesson.studentGroup + "</p>"
-                    + "</div></div>");
+            let id = uuid();
+            var lessonElement = $(template({ lesson }, props => `
+                <div class="card lesson" style="background-color: ${color}">
+                    <div class="card-body p-2">
+                        <button id="${id}" type="button" class="ml-2 btn btn-light btn-sm p-1 float-right">
+                            <small class="fas fa-trash"></small>
+                        </button>
+                        <h5 class="card-title mb-1">${props.lesson.subject}</h5>
+                        <p class="card-text text-muted ml-2 mb-1">by ${props.lesson.teacher}</p>
+                        <small class="ml-2 mt-1 card-text text-muted align-bottom float-right">${props.lesson.id}</small>
+                        <p class="card-text ml-2">${lesson.studentGroup}</p>
+                    </div>
+                </div>
+            `));
             if (lesson.timeslot == null || lesson.room == null) {
                 unassignedLessons.append(lessonElement);
             } else {
-                $("#timeslot" + lesson.timeslot.id + "room" + lesson.room.id).append(lessonElement);
-                var lessonElementWithoutDelete = $("<div class=\"card lesson\" style=\"background-color: " + color +"\"><div class=\"card-body p-2\">"
-                        + "<h5 class=\"card-title mb-1\">" + lesson.subject + "</h5>"
-                        + "<p class=\"card-text text-muted ml-2 mb-1\">by " + lesson.teacher + "</p>"
-                        + "<small class=\"ml-2 mt-1 card-text text-muted align-bottom float-right\">" + lesson.id + "</small>"
-                        + "<p class=\"card-text ml-2\">" + lesson.studentGroup + "</p>"
-                        + "</div></div>");
-                $("#timeslot" + lesson.timeslot.id + "teacher" + convertToId(lesson.teacher)).append(lessonElementWithoutDelete.clone());
-                $("#timeslot" + lesson.timeslot.id + "studentGroup" + convertToId(lesson.studentGroup)).append(lessonElementWithoutDelete.clone());
+                $(`#timeslot${lesson.timeslot.id}room${lesson.room.id}`).append(lessonElement);
+                var lessonElementWithoutDelete = $(template({ lesson }, props => `
+                    <div class="card lesson" style="background-color: ${color}">
+                        <div class="card-body p-2">
+                            <h5 class="card-title mb-1">${props.lesson.subject}</h5>
+                            <p class="card-text text-muted ml-2 mb-1">by ${props.lesson.teacher}</p>
+                            <small class="ml-2 mt-1 card-text text-muted align-bottom float-right">${props.lesson.id}</small>
+                            <p class="card-text ml-2">${props.lesson.studentGroup}</p>
+                        </div>
+                    </div>
+                `));
+                $(`#timeslot${lesson.timeslot.id}teacher${convertToId(lesson.teacher)}`).append(lessonElementWithoutDelete.clone());
+                $(`#timeslot${lesson.timeslot.id}studentGroup${convertToId(lesson.studentGroup)}`).append(lessonElementWithoutDelete.clone());
             }
-            $("#deleteLessonButton-" + lesson.id).click(function() {
+            $(`#${id}`).click(() => {
                 deleteLesson(lesson);
             });
         });
@@ -230,18 +264,48 @@ function deleteRoom(room) {
 function showError(title, xhr) {
     var serverErrorMessage = xhr.responseJSON == null ? "No response from server." : xhr.responseJSON.message;
     console.error(title + "\n" + serverErrorMessage);
-    var notification = $("<div class=\"toast\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\" style=\"min-width: 30rem\">"
-            + "<div class=\"toast-header bg-danger\">"
-            + "<strong class=\"mr-auto text-dark\">Error</strong>"
-            + "<button type=\"button\" class=\"ml-2 mb-1 close\" data-dismiss=\"toast\" aria-label=\"Close\">"
-            + "<span aria-hidden=\"true\">&times;</span>"
-            + "</button>"
-            + "</div>"
-            + "<div class=\"toast-body\"><p>" + title + "</p><pre><code>" + serverErrorMessage + "</code></pre></div>"
-            + "</div>");
+    var notification = template({ title, serverErrorMessage }, props => `
+      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 30rem">
+        <div class="toast-header bg-danger">
+          <strong class="mr-auto text-dark">Error</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body">
+          <p>${props.title}</p>
+          <pre><code>${props.serverErrorMessage}</code><pre>
+        </div>
+    `);
     $("#notificationPanel").append(notification);
     notification.toast({delay: 30000});
     notification.toast('show');
+}
+
+function template(params, creator) {
+    return creator(sanatizeObject(params));
+}
+
+function sanatizeObject(object) {
+    return Object.keys(object).reduce((result, key) => {
+        result[key] = (typeof object[key] === "string")? asSafeHtml(object[key]) : 
+          (typeof object[key] === "object" && object[key])? sanatizeObject(object[key]) : 
+          (typeof object[key] === "number")? String(object[key]) :
+          "";
+        return result
+      }, {})
+}
+
+function asSafeHtml(unsafeString) {
+    return $("<div/>").text(unsafeString).html();
+}
+
+// id's are more restrictive than plain html
+var lastUUID = 0;
+function uuid() {
+    const out = `uuid-${lastUUID}`;
+    lastUUID++;
+    return out;
 }
 
 $(document).ready( function() {
