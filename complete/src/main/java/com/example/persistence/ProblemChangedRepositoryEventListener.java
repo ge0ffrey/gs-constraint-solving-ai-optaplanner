@@ -3,7 +3,7 @@ package com.example.persistence;
 import com.example.domain.Lesson;
 import com.example.domain.Room;
 import com.example.domain.Timeslot;
-import com.example.solver.TimeTableService;
+import com.example.solver.TimeTableController;
 import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class ProblemChangedRepositoryEventListener {
 
     @Autowired
-    private TimeTableService timeTableService;
+    private TimeTableController timeTableController;
 
     // TODO Future work: Give the CRUD operations "right of way", by calling something like this:
     // before: solverManager.freeze(TIME_TABLE_ID);
@@ -47,7 +47,7 @@ public class ProblemChangedRepositoryEventListener {
     public void assertNotSolving() {
         // TODO Race condition: if a timeTableSolverService.solve() call arrives concurrently,
         // the solver might start before the CRUD transaction completes. That's not very harmful, though.
-        if (timeTableService.getSolverStatus() != SolverStatus.NOT_SOLVING) {
+        if (timeTableController.getSolverStatus() != SolverStatus.NOT_SOLVING) {
             throw new IllegalStateException("The solver is solving. Please stop solving first.");
         }
     }

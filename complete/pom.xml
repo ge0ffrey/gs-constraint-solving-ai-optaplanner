@@ -9,8 +9,8 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>gs-constraint-solving-ai-optaplanner</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <artifactId>constraint-solving-ai-optaplanner</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <name>Constraint Solving AI with OptaPlanner</name>
     <description>A Spring Boot OptaPlanner example to generate a high school timetable.</description>
 
@@ -19,10 +19,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.optaplanner</groupId>
-            <artifactId>optaplanner-spring-boot-starter</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -40,11 +36,9 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.optaplanner</groupId>
+            <artifactId>optaplanner-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -66,6 +60,12 @@
             <groupId>org.webjars</groupId>
             <artifactId>momentjs</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

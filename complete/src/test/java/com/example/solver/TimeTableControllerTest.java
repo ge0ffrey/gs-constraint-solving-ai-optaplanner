@@ -31,20 +31,20 @@ import static org.junit.Assert.*;
         "optaplanner.solver.environment-mode=FULL_ASSERT", // Use FULL_ASSERT only for testing, it slows down solving
         "optaplanner.solver.termination.spent-limit=1h", // Effectively disable this termination in favor of the best-score-limit
         "optaplanner.solver.termination.best-score-limit=0hard/*soft"})
-public class TimeTableServiceTest {
+public class TimeTableControllerTest {
 
     @Autowired
-    private TimeTableService timeTableService;
+    private TimeTableController timeTableController;
 
     @Test(timeout = 600_000)
     public void solveDemoDataUntilFeasible() throws InterruptedException {
-        timeTableService.solve();
-        TimeTable timeTable = timeTableService.getTimeTable();
+        timeTableController.solve();
+        TimeTable timeTable = timeTableController.getTimeTable();
         while (timeTable.getSolverStatus() != SolverStatus.NOT_SOLVING) {
             // Quick polling (not a Test Thread Sleep anti-pattern)
             // Test is still fast on fast machines and doesn't randomly fail on slow machines.
             Thread.sleep(100L);
-            timeTable = timeTableService.getTimeTable();
+            timeTable = timeTableController.getTimeTable();
         }
         assertTrue(timeTable.getLessonList().size() > 10);
         assertTrue(timeTable.getScore().isFeasible());

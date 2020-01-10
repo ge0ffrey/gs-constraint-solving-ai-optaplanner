@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/timeTable")
-public class TimeTableService {
+public class TimeTableController {
 
     @Autowired
     private SolverManager<TimeTable, UUID> solverManager;

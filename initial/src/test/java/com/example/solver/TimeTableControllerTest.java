@@ -37,15 +37,15 @@ import static org.junit.Assert.*;
 @SpringBootTest(properties = {
         "optaplanner.solver.termination.spent-limit=1h", // Effectively disable this termination in favor of the best-score-limit
         "optaplanner.solver.termination.best-score-limit=0hard/*soft"})
-public class TimeTableServiceTest {
+public class TimeTableControllerTest {
 
     @Autowired
-    private TimeTableService timeTableService;
+    private TimeTableController timeTableController;
 
     @Test(timeout = 600_000)
     public void solve() {
         TimeTable problem = generateProblem();
-        TimeTable solution = timeTableService.solve(problem);
+        TimeTable solution = timeTableController.solve(problem);
         assertFalse(solution.getLessonList().isEmpty());
         for (Lesson lesson : solution.getLessonList()) {
             assertNotNull(lesson.getTimeslot());
