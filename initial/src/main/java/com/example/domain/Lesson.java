@@ -1,13 +1,11 @@
 package com.example.domain;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
 public class Lesson {
 
-    @PlanningId
     private Long id;
 
     private String subject;
@@ -16,6 +14,7 @@ public class Lesson {
 
     @PlanningVariable(valueRangeProviderRefs = "timeslotRange")
     private Timeslot timeslot;
+
     @PlanningVariable(valueRangeProviderRefs = "roomRange")
     private Room room;
 
@@ -37,6 +36,10 @@ public class Lesson {
     // ********************************
     // Getters and setters
     // ********************************
+
+    public Long getId() {
+        return id;
+    }
 
     public String getSubject() {
         return subject;

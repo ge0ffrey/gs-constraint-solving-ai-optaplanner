@@ -22,10 +22,11 @@ using AI to adhere to hard and soft scheduling _constraints_, such as:
 * A teacher prefers to teach sequential lessons and dislikes gaps between lessons.
 
 Mathematically speaking, school timetabling is an _NP-hard_ problem.
-That means it's difficult.
+That means it's difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years.
-On a supercomputer. For a small dataset.
-Luckily, a constraint solver like OptaPlanner uses more advanced algorithms.
+Even on a supercomputer for a non-trivial dataset.
+Luckily, constraint solvers (such as OptaPlanner) have advanced algorithms
+to deliver a near-optimal solution in reasonable time.
 
 == What you'll need
 
@@ -50,6 +51,8 @@ with the following dependencies:
 
 * Spring Web (`spring-boot-starter-web`)
 * OptaPlanner (`optaplanner-spring-boot-starter`)
+** Currently `optaplanner-spring-boot-starter` isn't included in Spring Initializr yet.
+Add it manually in your build file.
 
 If you choose Maven, your `pom.xml` looks like this:
 
@@ -58,7 +61,7 @@ If you choose Maven, your `pom.xml` looks like this:
 include::initial/pom.xml[]
 ----
 
-On the other hand, in Gradle your `build.gradle` resembles this:
+On the other hand in Gradle, your `build.gradle` resembles this:
 
 [source,groovy,tabsize=2]
 ----
@@ -67,60 +70,250 @@ include::initial/build.gradle[]
 
 == Model the domain objects
 
-// TODO
+Your goal is to assign each lesson to a timeslot and a room.
+Create these classes:
 
-`src/main/java/com/example/domain/Timeslot.java`
+image::images/timeTableClassDiagramPure.png[]
+
+=== Timeslot
+
+A `Timeslot` is a time interval when lessons are taught.
+For example `Monday 10:30 - 11:30` or `Tuesday 13:30 - 14:30`.
+For simplicity's sake, all timeslots have the same duration
+and there are no timeslots during lunch or other other breaks.
+
+A timeslot has no date, because a high school schedule just repeats every week.
+So there is no need for https://docs.optaplanner.org/latestFinal/optaplanner-docs/html_single/index.html#continuousPlanning[continuous planning].
+
+Create `src/main/java/com/example/domain/Timeslot.java`:
+
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Timeslot.java[]
 ----
 
-`src/main/java/com/example/domain/Room.java`
+A timeslot is a _problem fact_, because it doesn't change in the solver.
+
+Notice the `toString()` method: keep the output short and sweet
+in case you ever want to read OptaPlanner's `DEBUG` or `TRACE` log (see below).
+
+=== Room
+
+A `Room` is a location where one lesson is taught at the same time.
+For example `Room A` or `Room B`.
+For simplicity's sake, all rooms have no capacity limits and can accommodate all lessons.
+
+Create `src/main/java/com/example/domain/Room.java`:
+
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Room.java[]
 ----
 
-`src/main/java/com/example/domain/Lesson.java`
+A room is a also problem fact, because it also doesn't change in the solver.
+
+=== Lesson
+
+During a `Lesson`, a teacher teachers a subject to a group of students.
+For example `Math by A.Turing for 9th grade` or `Chemistry by M.Curie for 10th grade`.
+If a subject is taught multiple times per week by the same teacher to the same student group,
+there are multiple `Lesson` instances that are only distinguishable by `id`.
+For example, the 9th grade has 6 math lessons a week.
+
+During solving, OptaPlanner changes 2 fields of the `Lesson` class,
+to assign each lesson to a `timeslot` and `room`.
+It must change these fields in the solver, so a lesson is a _planning entity_:
+
+image::images/timeTableClassDiagramAnnotated.png[]
+
+Most of the fields in the diagram above are input data, except for the orange fields:
+A lesson's `timeslot` and `room` are unassigned (null) in the input data
+and assigned (non-null) in the output data.
+OptaPlanner must recognize and change those fields, which are called planning variables.
+Annotate them with a `@PlanningVariable` annotation.
+Annotate their class with a `@PlanningEntity` annotation.
+
+Create `src/main/java/com/example/domain/Lesson.java`:
+
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Lesson.java[]
 ----
 
+Annotate the `Lesson` class with `@PlanningEntity`,
+so OptaPlanner knows this class changes during solving,
+because that class has one or more planning variables.
 
-== Create the planning solution
+Annotate the `timeslot` field with `@PlanningVariable`,
+so OptaPlanner knows that it can change its value.
+But where does OptaPlanner find potential `Timeslot` instances to assign to that field?
+Well, the `valueRangeProviderRefs` property connects it to a value range provider
+(explained later) that returns a `List<Timeslot>` to pick from.
 
-// TODO
+The same logic applies to the `room` field to also annotate it with `@PlanningVariable`.
 
-`src/main/java/com/example/domain/TimeTable.java`
+[NOTE]
+====
+Determining the `@PlanningVariable` fields for a arbitrary constraint solving use case
+is often challenging the first time.
+Read https://docs.optaplanner.org/latestFinal/optaplanner-docs/html_single/index.html#domainModelingGuide[the domain modeling guidelines]
+to avoid common pitfalls.
+====
+
+== Define the constraints and calculate the score
+
+A `Score` represents the quality of a given solution.
+The higher the better.
+OptaPlanner looks for the best solution:
+that's the solution with the highest score found in the available time.
+It could be the _optimal_ solution.
+
+This uses case uses a `HardSoftScore` because it has hard and soft constraints:
+
+* Hard constraints must not be broken. For example: _A room can have at most one lesson at the same time._
+* Soft constraints should not be broken. For example: _A teacher prefers to teach in a single room._
+
+Hard constraints are weighted against other hard constraints.
+Soft constraints are weighted too, against other soft constraints.
+*Hard constraints always outweigh soft constraints*, regardless of their respective weights.
+
+To calculate the score, you could implement an `EasyScoreCalculator`:
+
 [source,java,tabsize=2]
 ----
-include::initial/src/main/java/com/example/domain/TimeTable.java[]
+public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTable> {
+
+    @Override
+    public HardSoftScore calculateScore(TimeTable timeTable) {
+        int hardScore = 0;
+        for (Lesson a : timeTable.getLessonList()) {
+            for (Lesson b : timeTable.getLessonList()) {
+                if (a.getTimeslot() != null && a.getTimeslot().equals(b.getTimeslot())
+                        && a.getId() < b.getId()) {
+                    // A room can accommodate at most one lesson at the same time.
+                    if (a.getRoom() != null && a.getRoom().equals(b.getRoom())) {
+                        hardScore--;
+                    }
+                    // A teacher can teach at most one lesson at the same time.
+                    if (a.getTeacher().equals(b.getTeacher())) {
+                        hardScore--;
+                    }
+                    // A student can attend at most one lesson at the same time.
+                    if (a.getStudentGroup().equals(b.getStudentGroup())) {
+                        hardScore--;
+                    }
+                }
+            }
+        }
+        int softScore = 0;
+        // Soft constraints are only implemented in the "complete" implementation
+        return HardSoftScore.of(hardScore, softScore);
+    }
+
+}
 ----
 
+Unfortunately **that won't scale well**, because it is non-incremental:
+every time a lesson is assigned to a different timeslot or room,
+all lessons are re-evaluated to calculate the score.
 
-== Define the hard and soft constraints
+Instead, create `src/main/java/com/example/solver/TimeTableConstraintProvider.java`
+to do incremental score calculation.
+It uses OptaPlanner's ConstraintStream API that feels akin to Java 8 Streams and SQL:
 
-// TODO
-
-`src/main/java/com/example/solver/TimeTableConstraintProvider.java`
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/solver/TimeTableConstraintProvider.java[]
 ----
 
+That scales an order of magnitude better: __O__(n) instead of __O__(n²).
+
+== Gather the domain objects in a planning solution
+
+A `TimeTable` wraps all `Timeslot`, `Room` and `Lesson` instances of a single dataset.
+Furthermore, because it contains all lessons (each with a specific planning variables state),
+it is a _planning solution_ and it has a score:
+
+* If it breaks hard constraints, then it's an _infeasible_ solution. For example a solution with score `-2hard/-3soft`.
+* If all lessons are still unassigned, then it's an _uninitialized_ solution. For example a solution with score `-4init/0hard/0soft`.
+
+Create `src/main/java/com/example/domain/TimeTable.java`:
+
+[source,java,tabsize=2]
+----
+include::initial/src/main/java/com/example/domain/TimeTable.java[]
+----
+
+Annotate the `TimeTable` class with `@PlanningSolution`,
+OptaPlanner knows this class contains all the input data and all the output data.
+
+Specifically, this class is the input of the problem:
+
+* A `timeslotList` with all timeslots of a dataset.
+** This is a list of problem facts, because they don't change during planning.
+* A `roomList`.
+** This is a list of problem facts, because they don't change during planning.
+* A `lessonList` with all lessons.
+** This is a list of planning entities, because they change during planning.
+** Of each `Lesson`:
+*** The `timeslot` and `room` fields are typically still `null`, so unassigned.
+Those are planning variables.
+***  The other fields (such as `subject`, `teacher` and `studentGroup`) are filled in.
+Those are problem properties.
+
+But this class is also the output of the solution:
+
+* A `lessonList` for which each `Lesson` now has non-null `timeslot` and `room` fields.
+* A `score` to represent the quality of the output solution. For example `0hard/-5soft`.
+
+=== Annotate the value range providers
+
+That `timeslotList` field is a value range provider.
+It holds the `Timeslot` instances which OptaPlanner can pick from to assign to the `timeslot` field of `Lesson` instances.
+Annotate the `timeslotList` field with a `@ValueRangeProvider` annotation
+to connect those two, by matching the `id` with the `valueRangeProviderRefs` of the `@PlanningVariable`
+in the `Lesson`.
+
+The same logic applies to the `roomList` field to also annotate it with `@ValueRangeProvider`.
+
+=== Annotate the problem fact and planning entity properties
+
+Furthermore, OptaPlanner needs to know which `Lesson` instances it can change
+as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
+by your `TimeTableConstraintProvider`.
+
+Annotate the `timeslotList` and `roomList` with `@ProblemFactCollectionProperty`,
+so your `TimeTableConstraintProvider` can select _from_ these.
+
+Annotate the `lessonList` with `@PlanningEntityCollectionProperty`
+so OptaPlanner can change them during solving
+and your `TimeTableConstraintProvider` can select _from_ those too.
 
 == Create the solver service
 
-// TODO
+Now you're ready to put everything together and create a REST service.
+But solving planning problems on REST threads causes HTTP timeout issues.
+Therefore the Spring Boot Starter injects a `SolverManager`,
+which runs solvers in a separate thread pool
+and can solve multiple datasets in parallel.
 
-`src/main/java/com/example/solver/TimeTableService.java`
+Create the `src/main/java/com/example/solver/TimeTableService.java`:
+
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/solver/TimeTableController.java[]
 ----
 
+For simplicity's sake, this initial implementation waits for the solver to finish,
+which can cause an HTTP timeout. To avoid, limit the solving time to 5 seconds
+in `src/main/resources/application.properties`:
 
+[source,properties]
+----
+include::initial/src/main/resources/application.properties[]
+----
+
+The _complete_ implementation avoids HTTP timeouts far more elegantly.
 
 == Make the application executable
 
@@ -138,16 +331,16 @@ include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/
 
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_with_both.adoc[]
 
-
-// TODO
-
-
-
 == Test the application
 
 // TODO
 Now that the application is running, you can test it.
 
+
+=== Logging
+
+// TODO
+Math(15) {null -> MONDAY 09:30}
 
 
 == Summary
