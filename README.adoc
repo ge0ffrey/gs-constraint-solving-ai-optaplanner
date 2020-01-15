@@ -215,11 +215,11 @@ public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTab
 
 Unfortunately **that won't scale well**, because it is non-incremental:
 every time a lesson is assigned to a different timeslot or room,
-all lessons are re-evaluated to calculate the score.
+all lessons are re-evaluated to calculate the new score.
 
 Instead, create `src/main/java/com/example/solver/TimeTableConstraintProvider.java`
 to do incremental score calculation.
-It uses OptaPlanner's ConstraintStream API that feels akin to Java 8 Streams and SQL:
+It uses OptaPlanner's ConstraintStream API which feels like Java 8 Streams and SQL:
 
 [source,java,tabsize=2]
 ----
@@ -283,7 +283,7 @@ as well as how to retrieve the `Timeslot` and `Room` instances used for score ca
 by your `TimeTableConstraintProvider`.
 
 Annotate the `timeslotList` and `roomList` with `@ProblemFactCollectionProperty`,
-so your `TimeTableConstraintProvider` can select _from_ these.
+so your `TimeTableConstraintProvider` can select _from_ those instances.
 
 Annotate the `lessonList` with `@PlanningEntityCollectionProperty`
 so OptaPlanner can change them during solving
@@ -305,7 +305,8 @@ include::initial/src/main/java/com/example/solver/TimeTableController.java[]
 ----
 
 For simplicity's sake, this initial implementation waits for the solver to finish,
-which can cause an HTTP timeout. To avoid, limit the solving time to 5 seconds
+which can still cause an HTTP timeout.
+To avoid, limit the solving time to 5 seconds
 in `src/main/resources/application.properties`:
 
 [source,properties]
@@ -319,7 +320,8 @@ The _complete_ implementation avoids HTTP timeouts far more elegantly.
 
 Package everything in a single, executable JAR file, driven by a good old Java `main()` method:
 
-`src/main/java/com/example/TimeTableSpringBootApp.java`
+Create `src/main/java/com/example/TimeTableSpringBootApp.java`:
+
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/TimeTableSpringBootApp.java[]
@@ -330,6 +332,28 @@ include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_subhead.adoc[]
 
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/build_an_executable_jar_with_both.adoc[]
+
+=== Try the application
+
+Start the application and send a POST request to test the REST service:
+
+----
+$ curl -i -X POST http://localhost:8080/timeTable/solve -H "Content-Type:application/json" -d '{"timeslotList":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"roomList":[{"name":"Room A"},{"name":"Room B"}],"lessonList":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
+----
+
+After about 5 seconds, it responds something like this:
+
+----
+HTTP/1.1 200
+Content-Type: application/json
+...
+
+{"timeslotList":...,"roomList":...,"lessonList":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room A"}},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room A"}},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room B"}},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room B"}}],"score":"0hard/0soft"}
+----
+
+Notice that it assigned all 4 lessons to one of the 2 timeslots and one of the 2 rooms.
+Also notice that it abides to all hard constraints.
+For example: M. Curie's two lessons are in different timeslots.
 
 == Test the application
 
