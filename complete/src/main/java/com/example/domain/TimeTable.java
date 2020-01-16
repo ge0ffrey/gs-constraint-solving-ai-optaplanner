@@ -33,7 +33,8 @@ public class TimeTable {
     private TimeTable() {
     }
 
-    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList) {
+    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList,
+            List<Lesson> lessonList) {
         this.timeslotList = timeslotList;
         this.roomList = roomList;
         this.lessonList = lessonList;
