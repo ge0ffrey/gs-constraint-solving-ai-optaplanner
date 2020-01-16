@@ -72,7 +72,7 @@ image::images/timeTableClassDiagramPure.png[]
 A `Timeslot` is a time interval when lessons are taught.
 For example `Monday 10:30 - 11:30` or `Tuesday 13:30 - 14:30`.
 For simplicity's sake, all timeslots have the same duration
-and there are no timeslots during lunch or other other breaks.
+and there are no timeslots during lunch or other breaks.
 
 A timeslot has no date, because a high school schedule just repeats every week.
 So there is no need for https://docs.optaplanner.org/latestFinal/optaplanner-docs/html_single/index.html#continuousPlanning[continuous planning].
@@ -106,7 +106,7 @@ A room is a also problem fact, because it also doesn't change in the solver.
 
 === Lesson
 
-During a `Lesson`, a teacher teachers a subject to a group of students.
+During a `Lesson`, a teacher teaches a subject to a group of students.
 For example `Math by A.Turing for 9th grade` or `Chemistry by M.Curie for 10th grade`.
 If a subject is taught multiple times per week by the same teacher to the same student group,
 there are multiple `Lesson` instances that are only distinguishable by `id`.
@@ -146,7 +146,7 @@ The same logic applies to the `room` field to also annotate it with `@PlanningVa
 
 [NOTE]
 ====
-Determining the `@PlanningVariable` fields for a arbitrary constraint solving use case
+Determining the `@PlanningVariable` fields for an arbitrary constraint solving use case
 is often challenging the first time.
 Read https://docs.optaplanner.org/latestFinal/optaplanner-docs/html_single/index.html#domainModelingGuide[the domain modeling guidelines]
 to avoid common pitfalls.
