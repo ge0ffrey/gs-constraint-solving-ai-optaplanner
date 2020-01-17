@@ -26,7 +26,7 @@ That means it's difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years.
 Even on a supercomputer for a non-trivial dataset.
 Luckily, constraint solvers (such as OptaPlanner) have advanced algorithms
-to deliver a near-optimal solution in reasonable time.
+to deliver a near-optimal solution in a reasonable amount of time.
 
 == What you'll need
 
@@ -84,14 +84,14 @@ Create `src/main/java/com/example/domain/Timeslot.java`:
 include::initial/src/main/java/com/example/domain/Timeslot.java[]
 ----
 
-A timeslot is a _problem fact_, because it doesn't change in the solver.
+Because a timeslot doesn't change during solving, it's called a _problem fact_.
 
 Notice the `toString()` method: keep the output short and sweet
 in case you ever want to read OptaPlanner's `DEBUG` or `TRACE` log (see below).
 
 === Room
 
-A `Room` is a location where one lesson is taught at the same time.
+A `Room` is a location where lessons are taught.
 For example `Room A` or `Room B`.
 For simplicity's sake, all rooms have no capacity limits and can accommodate all lessons.
 
@@ -102,7 +102,7 @@ Create `src/main/java/com/example/domain/Room.java`:
 include::initial/src/main/java/com/example/domain/Room.java[]
 ----
 
-A room is a also problem fact, because it also doesn't change in the solver.
+A room also doesn't change during solving, so it's also a _problem fact_.
 
 === Lesson
 
@@ -160,7 +160,7 @@ OptaPlanner looks for the best solution:
 that's the solution with the highest score found in the available time.
 It could be the _optimal_ solution.
 
-This uses case uses a `HardSoftScore` because it has hard and soft constraints:
+This use case uses a `HardSoftScore` because it has hard and soft constraints:
 
 * Hard constraints must not be broken. For example: _A room can have at most one lesson at the same time._
 * Soft constraints should not be broken. For example: _A teacher prefers to teach in a single room._
@@ -223,7 +223,7 @@ That scales an order of magnitude better: __O__(n) instead of __O__(n²).
 == Gather the domain objects in a planning solution
 
 A `TimeTable` wraps all `Timeslot`, `Room` and `Lesson` instances of a single dataset.
-Furthermore, because it contains all lessons (each with a specific planning variables state),
+Furthermore, because it contains all lessons (each with a specific planning variable state),
 it is a _planning solution_ and it has a score:
 
 * If it breaks hard constraints, then it's an _infeasible_ solution. For example a solution with score `-2hard/-3soft`.
@@ -236,14 +236,14 @@ Create `src/main/java/com/example/domain/TimeTable.java`:
 include::initial/src/main/java/com/example/domain/TimeTable.java[]
 ----
 
-Annotate the `TimeTable` class with `@PlanningSolution`,
+Annotate the `TimeTable` class with `@PlanningSolution`.
 OptaPlanner knows this class contains all the input data and all the output data.
 
 Specifically, this class is the input of the problem:
 
-* A `timeslotList` with all timeslots of a dataset.
+* A `timeslotList` with all timeslots.
 ** This is a list of problem facts, because they don't change during planning.
-* A `roomList`.
+* A `roomList` with all rooms.
 ** This is a list of problem facts, because they don't change during planning.
 * A `lessonList` with all lessons.
 ** This is a list of planning entities, because they change during planning.
@@ -289,7 +289,7 @@ Therefore the Spring Boot Starter injects a `SolverManager`,
 which runs solvers in a separate thread pool
 and can solve multiple datasets in parallel.
 
-Create the `src/main/java/com/example/solver/TimeTableService.java`:
+Create the `src/main/java/com/example/solver/TimeTableController.java`:
 
 [source,java,tabsize=2]
 ----
@@ -298,7 +298,7 @@ include::initial/src/main/java/com/example/solver/TimeTableController.java[]
 
 For simplicity's sake, this initial implementation waits for the solver to finish,
 which can still cause an HTTP timeout.
-To avoid, limit the solving time to 5 seconds
+To avoid this, limit the solving time to 5 seconds
 in `src/main/resources/application.properties`:
 
 [source,properties]
@@ -365,7 +365,7 @@ as well as that it has found a feasible solution (no hard constraints broken).
 Normally the solver finds a feasible solution in less than 200 milliseconds.
 Notice how the `@SpringBootTest` `properties` overwrites the solver termination
 to terminate as soon as a feasible solution (`0hard/*soft`) is found.
-This avoids hard coding a solver time. The unit test that is run on arbitrarily hardware.
+This avoids hard coding a solver time. The unit test can run on arbitrary hardware.
 This approach ensures that the test runs long enough to find a feasible solution, even on slow machines.
 But it doesn't run a millisecond longer than it strictly must, even on fast computers.
 
@@ -373,7 +373,7 @@ But it doesn't run a millisecond longer than it strictly must, even on fast comp
 
 When adding constraints in your `ConstraintProvider`,
 keep an eye on the _score calculation speed_ in the `info` logs,
-to asses the performance impact:
+to assess the performance impact:
 
 ----
 Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (29455/sec), phase total (2), environment mode (REPRODUCIBLE).
@@ -413,7 +413,7 @@ Now try building the *complete* example to enable database and UI integration:
 
 . https://spring.io/guides/gs/accessing-data-rest/[Expose them through REST].
 
-. Build `TimeTableRepository` facade to read and write a `TimeTable` in a single transaction.
+. Build a `TimeTableRepository` facade to read and write a `TimeTable` in a single transaction.
 
 . Adjust the `TimeTableController` accordingly:
 +
@@ -422,8 +422,8 @@ Now try building the *complete* example to enable database and UI integration:
 include::complete/src/main/java/com/example/solver/TimeTableController.java[]
 ----
 +
-For simplicity's sake, this code handles only 1 `TimeTable`,
-but it's straightforward to enable multitenancy and handle multiple `TimeTable` instances in parallel.
+For simplicity's sake, this code handles only one `TimeTable`,
+but it's straightforward to enable multi-tenancy and handle multiple `TimeTable` instances in parallel.
 +
 The `getTimeTable()` method uses the `ScoreManager` (which is automatically injected)
 to calculate the score of the current schedule, so the UI can show it.
@@ -431,7 +431,7 @@ to calculate the score of the current schedule, so the UI can show it.
 The `solve()` method uses the `SolverManager.solveAndListen()` method to listen to intermediate best solutions
 and store them in the database. This allows the UI to show progress while the backend is still solving.
 
-. Build a pretty webUI on top of these REST methods to visualize the timetable.
+. Build a pretty web UI on top of these REST methods to visualize the timetable.
 
 Take a look at the *complete* example to see how this all turns out.
 
