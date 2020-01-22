@@ -48,17 +48,21 @@ Add it manually in your build file.
 
 If you choose Maven, your `pom.xml` looks like this:
 
+====
 [source,xml,tabsize=2]
 ----
 include::initial/pom.xml[]
 ----
+====
 
 On the other hand, in Gradle, your `build.gradle` resembles this:
 
+====
 [source,groovy,tabsize=2]
 ----
 include::initial/build.gradle[]
 ----
+====
 
 == Model the domain objects
 
@@ -79,10 +83,12 @@ So there is no need for https://docs.optaplanner.org/latestFinal/optaplanner-doc
 
 Create `src/main/java/com/example/domain/Timeslot.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Timeslot.java[]
 ----
+====
 
 Because a timeslot does not change during solving, it is called a _problem fact_.
 
@@ -97,10 +103,12 @@ For simplicity's sake, all rooms have no capacity limits and can accommodate all
 
 Create `src/main/java/com/example/domain/Room.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Room.java[]
 ----
+====
 
 A room also does not change during solving, so it is also a _problem fact_.
 
@@ -127,10 +135,12 @@ Annotate their class with a `@PlanningEntity` annotation.
 
 Create `src/main/java/com/example/domain/Lesson.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/Lesson.java[]
 ----
+====
 
 Annotate the `Lesson` class with a `@PlanningEntity` annotation,
 so OptaPlanner knows that this class changes during solving
@@ -171,6 +181,7 @@ Soft constraints are weighted too, against other soft constraints.
 
 To calculate the score, you could implement an `EasyScoreCalculator`:
 
+====
 [source,java,tabsize=2]
 ----
 public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTable> {
@@ -204,6 +215,7 @@ public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTab
 
 }
 ----
+====
 
 Unfortunately **that won't scale well**, because it is non-incremental:
 every time a lesson is assigned to a different timeslot or room,
@@ -213,10 +225,12 @@ Instead, create `src/main/java/com/example/solver/TimeTableConstraintProvider.ja
 to do incremental score calculation.
 It uses OptaPlanner's ConstraintStream API which feels like Java 8 Streams and SQL:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/solver/TimeTableConstraintProvider.java[]
 ----
+====
 
 That scales an order of magnitude better: __O__(n) instead of __O__(n²).
 
@@ -233,10 +247,12 @@ for example, a solution with the score `-4init/0hard/0soft`.
 
 Create `src/main/java/com/example/domain/TimeTable.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/domain/TimeTable.java[]
 ----
+====
 
 Annotate the `TimeTable` class with `@PlanningSolution`.
 OptaPlanner knows that this class contains all of the input and output data.
@@ -293,20 +309,24 @@ and can solve multiple datasets in parallel.
 
 Create the `src/main/java/com/example/solver/TimeTableController.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/solver/TimeTableController.java[]
 ----
+====
 
 For simplicity's sake, this initial implementation waits for the solver to finish,
 which can still cause an HTTP timeout.
 To avoid this, limit the solving time to five seconds the
 in `src/main/resources/application.properties` file:
 
+====
 [source,properties]
 ----
 include::initial/src/main/resources/application.properties[]
 ----
+====
 
 The _complete_ implementation avoids HTTP timeouts much more elegantly.
 
@@ -316,10 +336,12 @@ Package everything into a single, executable JAR file, driven by a standard Java
 
 Create `src/main/java/com/example/TimeTableSpringBootApp.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/main/java/com/example/TimeTableSpringBootApp.java[]
 ----
+====
 
 include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/spring-boot-application.adoc[]
 
@@ -356,10 +378,12 @@ In a JUnit test, generate a test dataset and send it to the `TimeTableController
 
 Create `src/test/java/com/example/solver/TimeTableControllerTest.java`:
 
+====
 [source,java,tabsize=2]
 ----
 include::initial/src/test/java/com/example/solver/TimeTableControllerTest.java[]
 ----
+====
 
 This test verifies that after solving all lessons are assigned to a timeslot and a room,
 as well verifies that it found a feasible solution (no hard constraints broken).
@@ -384,13 +408,16 @@ Solving ended: time spent (5000), best score (0hard/0soft), score calculation sp
 To understand how OptaPlanner is solving your problem internally,
 change the logging in `application.properties` or with `-D` system property:
 
+====
 [source,properties]
 ----
 logging.level.org.optaplanner=debug
 ----
+====
 
 Use `debug` to show every _step_:
 
+====
 [options="nowrap"]
 ----
 ... Solving started: time spent (67), best score (-20init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
@@ -398,6 +425,7 @@ Use `debug` to show every _step_:
 ...     CH step (1), time spent (145), score (-16init/0hard/0soft), selected move count (15), picked move ([Physics(102) {null -> Room A}, Physics(102) {null -> MONDAY 09:30}]).
 ...
 ----
+====
 
 
 Use `trace` to show every _step_ and every _move_ per step.
@@ -419,10 +447,12 @@ Now try building the *complete* example to enable database and UI integration:
 
 . Adjust the `TimeTableController` accordingly:
 +
+====
 [source,java,tabsize=2]
 ----
 include::complete/src/main/java/com/example/solver/TimeTableController.java[]
 ----
+====
 +
 For simplicity's sake, this code handles only one `TimeTable`,
 but it's straightforward to enable multi-tenancy and handle multiple `TimeTable` instances in parallel.
