@@ -166,11 +166,10 @@ to avoid common pitfalls.
 
 A `Score` represents the quality of a given solution.
 The higher the better.
-OptaPlanner looks for the best solution:
-that's the solution with the highest score found in the available time.
+OptaPlanner looks for the best solution, which is the solution with the highest score found in the available time.
 It could be the _optimal_ solution.
 
-This use case uses a `HardSoftScore` because it has hard and soft constraints:
+Because this use case has hard and soft constraints, use the `HardSoftScore` class to represent the score.
 
 * Hard constraints must not be broken. For example: _A room can have at most one lesson at the same time._
 * Soft constraints should not be broken. For example: _A teacher prefers to teach in a single room._
@@ -334,7 +333,8 @@ The _complete_ implementation avoids HTTP timeouts much more elegantly.
 
 Package everything into a single, executable JAR file driven by a standard Java `main()` method:
 
-Create the `src/main/java/com/example/TimeTableSpringBootApp.java` class:
+Replace the `DemoApplication.java` class created by Spring Initializr
+with the `src/main/java/com/example/TimeTableSpringBootApp.java` class:
 
 ====
 [source,java,tabsize=2]
