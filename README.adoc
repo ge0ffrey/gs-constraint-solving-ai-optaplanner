@@ -64,6 +64,7 @@ include::initial/build.gradle[]
 ----
 ====
 
+[[initial]]
 == Model the domain objects
 
 Your goal is to assign each lesson to a time slot and a room.
@@ -175,7 +176,7 @@ OptaPlanner looks for the best solution, which is the solution with the highest 
 It could be the _optimal_ solution.
 
 Because this use case has hard and soft constraints,
-use the `HardSoftScore` class to represent a score:
+use the `HardSoftScore` class to represent the score:
 
 * Hard constraints must not be broken. For example: _A room can have at most one lesson at the same time._
 * Soft constraints should not be broken. For example: _A teacher prefers to teach in a single room._
@@ -447,7 +448,7 @@ You have just developed a https://spring.io/[Spring] application with https://ww
 
 == Further improvements: Database and UI integration
 
-Now try building the *complete* example to enable database and UI integration:
+Now try building adding database and UI integration:
 
 . Create https://spring.io/guides/gs/accessing-data-jpa/[JPA repositories] for `Timeslot`, `Room`, and `Lesson`.
 
@@ -467,12 +468,13 @@ include::complete/src/main/java/com/example/solver/TimeTableController.java[]
 For simplicity's sake, this code handles only one `TimeTable`,
 but it is straightforward to enable multi-tenancy and handle multiple `TimeTable` instances of different high schools in parallel.
 +
-The `getTimeTable()` method uses the `ScoreManager` (which is automatically injected)
-to calculate the score of the current schedule, so the UI can show it.
-There is a new field on the `TimeTable` class to accommodate for that.
+The `getTimeTable()` method return the latest time table from the database.
+It uses the `ScoreManager` (which is automatically injected)
+to calculate the score of that time table, so the UI can show the score.
 +
-The `solve()` method uses the `SolverManager.solveAndListen()` method to listen to intermediate best solutions
-and store them in the database.
+The `solve()` method starts a job to solve the current time table and store the time slot and room assignments in the database.
+It uses the `SolverManager.solveAndListen()` method to listen to intermediate best solutions
+and update the database accordingly.
 This enables the UI to show progress while the backend is still solving.
 
 . Adjust the `TimeTableControllerTest` accordingly, now that the `solve()` method returns immediately.
