@@ -9,15 +9,15 @@ import com.example.domain.Lesson;
 import com.example.domain.Room;
 import com.example.domain.TimeTable;
 import com.example.domain.Timeslot;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
         "optaplanner.solver.termination.spent-limit=1h", // Effectively disable this termination in favor of the best-score-limit
         "optaplanner.solver.termination.best-score-limit=0hard/*soft"})
@@ -26,7 +26,8 @@ public class TimeTableControllerTest {
     @Autowired
     private TimeTableController timeTableController;
 
-    @Test(timeout = 600_000)
+    @Test
+    @Timeout(600_000)
     public void solve() {
         TimeTable problem = generateProblem();
         TimeTable solution = timeTableController.solve(problem);
