@@ -46,7 +46,7 @@ with the following dependencies:
 ** Currently `optaplanner-spring-boot-starter` isn't included in Spring Initializr yet.
 Add it manually in your build file.
 
-If you choose Maven, your `pom.xml` file looks like this:
+If you choose Maven, your `pom.xml` file has the following content:
 
 ====
 [source,xml,tabsize=2]
@@ -55,7 +55,7 @@ include::initial/pom.xml[]
 ----
 ====
 
-On the other hand, in Gradle, your `build.gradle` file resembles this:
+On the other hand, in Gradle, your `build.gradle` file has this content:
 
 ====
 [source,groovy,tabsize=2]
