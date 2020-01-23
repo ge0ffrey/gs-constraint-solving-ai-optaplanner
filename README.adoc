@@ -232,7 +232,7 @@ include::initial/src/main/java/com/example/solver/TimeTableConstraintProvider.ja
 ----
 ====
 
-This example scales an order of magnitude better: __O__(n) instead of __O__(n²).
+The `ConstraintProvider` scales an order of magnitude better than the `EasyScoreCalculator`: __O__(n) instead of __O__(n²).
 
 == Gather the domain objects in a planning solution
 
