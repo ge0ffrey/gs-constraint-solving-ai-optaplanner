@@ -326,8 +326,15 @@ include::initial/src/main/java/com/example/solver/TimeTableController.java[]
 
 For simplicity's sake, this initial implementation waits for the solver to finish,
 which can still cause an HTTP timeout.
-To avoid this, limit the solving time to five seconds the
-in `src/main/resources/application.properties` file:
+The _complete_ implementation avoids HTTP timeouts much more elegantly.
+
+== Set the termination time
+
+Without a termination setting or a termination event, the solver runs forever.
+To avoid that, limit the solving time to five seconds.
+That is short enough to avoid the HTTP timeout.
+
+Create the `src/main/resources/application.properties` file:
 
 ====
 [source,properties]
@@ -336,7 +343,6 @@ include::initial/src/main/resources/application.properties[]
 ----
 ====
 
-The _complete_ implementation avoids HTTP timeouts much more elegantly.
 
 == Make the application executable
 
@@ -368,7 +374,8 @@ The following example uses the Linux command `curl` to send a POST request:
 $ curl -i -X POST http://localhost:8080/timeTable/solve -H "Content-Type:application/json" -d '{"timeslotList":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"roomList":[{"name":"Room A"},{"name":"Room B"}],"lessonList":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
 ----
 
-After about five seconds, the service returns output similar to the following example:
+After about five seconds, according to the termination spent time defined in your `application.properties`,
+the service returns output similar to the following example:
 
 ----
 HTTP/1.1 200
@@ -381,6 +388,16 @@ Content-Type: application/json
 Notice that your application assigned all four lessons to one of the two time slots and one of the two rooms.
 Also notice that it conforms to all hard constraints.
 For example, M. Curie's two lessons are in different time slots.
+
+On the server side, the `info` log show what OptaPlanner did in those five seconds:
+
+[options="nowrap"]
+----
+... Solving started: time spent (33), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
+... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), score calculation speed (459/sec), step total (4).
+... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), score calculation speed (28949/sec), step total (28398).
+... Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
+----
 
 === Test the application
 
@@ -409,11 +426,11 @@ But it does not run a millisecond longer than it strictly must, even on fast mac
 === Logging
 
 When adding constraints in your `ConstraintProvider`,
-keep an eye on the _score calculation speed_ in the `info` logs,
+keep an eye on the _score calculation speed_ in the `info` log,
 to assess the performance impact:
 
 ----
-Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (29455/sec), phase total (2), environment mode (REPRODUCIBLE).
+... Solving ended: ..., score calculation speed (29455/sec), ...
 ----
 
 To understand how OptaPlanner is solving your problem internally,
@@ -428,7 +445,6 @@ logging.level.org.optaplanner=debug
 
 Use `debug` logging to show every _step_:
 
-====
 [options="nowrap"]
 ----
 ... Solving started: time spent (67), best score (-20init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
@@ -436,8 +452,6 @@ Use `debug` logging to show every _step_:
 ...     CH step (1), time spent (145), score (-16init/0hard/0soft), selected move count (15), picked move ([Physics(102) {null -> Room A}, Physics(102) {null -> MONDAY 09:30}]).
 ...
 ----
-====
-
 
 Use `trace` logging to show every _step_ and every _move_ per step.
 
