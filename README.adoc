@@ -72,7 +72,7 @@ You will create these classes:
 
 image::images/timeTableClassDiagramPure.png[]
 
-=== Time slot
+=== Timeslot
 
 The `Timeslot` class represents a time interval when lessons are taught,
 for example, `Monday 10:30 - 11:30` or `Tuesday 13:30 - 14:30`.
@@ -91,7 +91,7 @@ include::initial/src/main/java/com/example/domain/Timeslot.java[]
 ----
 ====
 
-Because no `TimeSlot` instances change during solving, a `Timeslot` is called a _problem fact_.
+Because no `Timeslot` instances change during solving, a `Timeslot` is called a _problem fact_.
 Such classes do not require any OptaPlanner specific annotations.
 
 Notice the `toString()` method keeps the output short,
@@ -243,7 +243,7 @@ The `ConstraintProvider` scales an order of magnitude better than the `EasyScore
 
 == Gather the domain objects in a planning solution
 
-A `TimeTable` wraps all `Timeslot`, `Room` and `Lesson` instances of a single dataset.
+A `TimeTable` wraps all `Timeslot`, `Room`, and `Lesson` instances of a single dataset.
 Furthermore, because it contains all lessons, each with a specific planning variable state,
 it is a _planning solution_ and it has a score:
 
@@ -413,7 +413,7 @@ include::initial/src/test/java/com/example/solver/TimeTableControllerTest.java[]
 ----
 ====
 
-This test verifies that after solving all lessons are assigned to a time slot and a room.
+This test verifies that after solving, all lessons are assigned to a time slot and a room.
 It also verifies that it found a feasible solution (no hard constraints broken).
 
 Normally, the solver finds a feasible solution in less than 200 milliseconds.
@@ -427,7 +427,7 @@ But it does not run a millisecond longer than it strictly must, even on fast mac
 
 When adding constraints in your `ConstraintProvider`,
 keep an eye on the _score calculation speed_ in the `info` log,
-to assess the performance impact:
+after solving for the same amount of time, to assess the performance impact:
 
 ----
 ... Solving ended: ..., score calculation speed (29455/sec), ...
@@ -462,7 +462,7 @@ You have just developed a https://spring.io/[Spring] application with https://ww
 
 == Further improvements: Database and UI integration
 
-Now try building adding database and UI integration:
+Now try adding database and UI integration:
 
 . Create https://spring.io/guides/gs/accessing-data-jpa/[JPA repositories] for `Timeslot`, `Room`, and `Lesson`.
 
@@ -482,7 +482,7 @@ include::complete/src/main/java/com/example/solver/TimeTableController.java[]
 For simplicity's sake, this code handles only one `TimeTable`,
 but it is straightforward to enable multi-tenancy and handle multiple `TimeTable` instances of different high schools in parallel.
 +
-The `getTimeTable()` method return the latest time table from the database.
+The `getTimeTable()` method returns the latest time table from the database.
 It uses the `ScoreManager` (which is automatically injected)
 to calculate the score of that time table, so the UI can show the score.
 +
