@@ -10,9 +10,6 @@ sourceCompatibility = "1.8"
 
 repositories {
     mavenCentral()
-    maven { // TODO remove when OptaPlanner 7.32.0.Final is released
-        url "http://repository.jboss.org/nexus/content/groups/public"
-    }
 }
 
 dependencies {
@@ -20,7 +17,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-rest"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     runtimeOnly "com.h2database:h2"
-    implementation "org.optaplanner:optaplanner-spring-boot-starter:7.32.0-SNAPSHOT" // TODO Update when OptaPlanner 7.32.0.Final is released
+    implementation "org.optaplanner:optaplanner-spring-boot-starter:7.32.0.Final"
     runtimeOnly "org.webjars:webjars-locator:0.37"
     runtimeOnly "org.webjars:bootstrap:4.3.1"
     runtimeOnly "org.webjars:font-awesome:5.11.2"
